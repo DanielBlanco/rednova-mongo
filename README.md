@@ -14,6 +14,8 @@ Just import the library into your Scala dependencies.
 "dev.dblancorojas" %% "zongo-circe" % "0.1.0"
 ```
 
+`zongo-core` provides `zio-json` support.
+
 ## Author
 
 Daniel Blanco Rojas [dblancorojas.dev](https://dblancorojas.dev)
