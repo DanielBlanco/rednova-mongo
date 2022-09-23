@@ -4,8 +4,8 @@ import com.mongodb.MongoException
 import com.mongodb.client.result.*
 import java.time.{Instant, LocalDate}
 import java.util.UUID
-import mongo4cats.collection.operations.*
 import mongo4cats.bson.*
+import mongo4cats.collection.operations.*
 import zio.*
 import zio.json.*
 import zio.stream.*
@@ -13,7 +13,7 @@ import zongo.*
 import zongo.json.*
 
 case class Item(
-    _id: Option[MongoId],
+    _id: ObjectId,
     uuid: UUID,
     name: String,
     createdAt: Instant = Instant.now(),
@@ -47,7 +47,7 @@ trait ItemsRepo:
 
   def insertMany(docs: Chunk[Item]): Task[InsertManyResult]
 
-  def remove(id: MongoId): Task[DeleteResult]
+  def remove(id: ObjectId): Task[DeleteResult]
 
   def remove(filter: Filter): Task[DeleteResult]
 
@@ -100,7 +100,7 @@ object ItemsRepo:
   def insertMany(docs: Chunk[Item]): ItemsRepoIO[InsertManyResult] =
     ZIO.serviceWithZIO(_.insertMany(docs))
 
-  def remove(id: MongoId): ItemsRepoIO[DeleteResult] =
+  def remove(id: ObjectId): ItemsRepoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.remove(id))
 
   def remove(filter: Filter): ItemsRepoIO[DeleteResult] =
@@ -143,9 +143,7 @@ final case class ItemsRepoLive(repo: MongoRepo[Item]) extends ItemsRepo:
   def insert(doc: Item): Task[Item] =
     for {
       _       <- repo.insert(doc)
-      opt     <- doc._id match
-                   case None      => ZIO.none
-                   case Some(_id) => repo.findFirst(Filter.idEq(_id))
+      opt     <- repo.findFirst(Filter.idEq(doc._id))
       updated <- ZIO
                    .fromOption(opt)
                    .mapError(_ => new MongoException("Inserted item not found"))
@@ -154,7 +152,7 @@ final case class ItemsRepoLive(repo: MongoRepo[Item]) extends ItemsRepo:
   def insertMany(docs: Chunk[Item]): Task[InsertManyResult] =
     repo.insertMany(docs)
 
-  def remove(id: MongoId): Task[DeleteResult] =
+  def remove(id: ObjectId): Task[DeleteResult] =
     repo.remove(id)
 
   def remove(filter: Filter): Task[DeleteResult] =

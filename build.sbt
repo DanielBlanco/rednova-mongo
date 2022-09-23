@@ -40,7 +40,8 @@ lazy val root           = project
   .settings(name := "zongo")
   .aggregate(
     `zongo-core`,
-    `zongo-circe`
+    `zongo-circe`,
+    `zongo-repo`
   )
 
 lazy val `zongo-core`   = project
@@ -60,6 +61,17 @@ lazy val `zongo-circe`  = project
   .settings(
     name                     := "zongo-circe",
     libraryDependencies     ++= Dependencies.circe,
+    Test / parallelExecution := false,
+    Test / fork              := true
+  )
+
+lazy val `zongo-repo`   = project
+  .in(file("repo"))
+  .dependsOn(`zongo-core`)
+  .settings(commonSettings)
+  .settings(
+    name                     := "zongo-repo",
+    libraryDependencies     ++= Dependencies.repo,
     Test / parallelExecution := false,
     Test / fork              := true
   )

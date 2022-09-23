@@ -60,4 +60,6 @@ object Dependencies {
 
   def circe =
     Circe.libs ++ Testing.libs
+
+  def repo = core
 }

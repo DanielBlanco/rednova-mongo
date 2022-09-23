@@ -1,5 +1,6 @@
 package zongo
 
+import mongo4cats.bson.ObjectId
 import mongo4cats.collection.operations.*
 import com.mongodb.client.model.Filters
 import java.util.UUID
@@ -53,8 +54,8 @@ object MongoRepoSpec extends BaseSpec:
     test("insert works") {
       for {
         _     <- ItemsRepo.removeAll
-        id    <- MongoId.zmake("607ebd5d1c8f40252380ea44")
-        item   = Item(Some(id), UUID.randomUUID, "Lorelai")
+        id     = oid("607ebd5d1c8f40252380ea44")
+        item   = Item(id, UUID.randomUUID, "Lorelai")
         _     <- ItemsRepo.insert(item)
         count <- ItemsRepo.count
         found <- ItemsRepo.findFirst(Filter.idEq(id))
@@ -106,12 +107,11 @@ object MongoRepoSpec extends BaseSpec:
 
   val UUID1 = "c6ac38e9-1417-49bd-ab5b-a6081eb40d71"
 
-  def bulkInsertData = Chunk(
-    Item(
-      Some(MongoId.make),
-      UUID.fromString(UUID1),
-      "Daniel"
-    ),
-    Item(Some(MongoId.make), UUID.randomUUID, "Jane"),
-    Item(Some(MongoId.make), UUID.randomUUID, "John")
+  def bulkInsertData                    = Chunk(
+    Item(oid, UUID.fromString(UUID1), "Daniel"),
+    Item(oid, UUID.randomUUID, "Jane"),
+    Item(oid, UUID.randomUUID, "John")
   )
+
+  private def oid: ObjectId             = new ObjectId()
+  private def oid(id: String): ObjectId = new ObjectId(id)

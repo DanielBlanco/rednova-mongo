@@ -27,7 +27,8 @@ trait BaseSpec extends ZIOSpecDefault:
     ZLayer
       .makeSome[TestEnvironment, SpecEnv](
         SpecConfig.live,
-        mongoLayer
+        mongoLayer,
+        ItemsRepo.layer(TEST_DB)
       )
       .orDie
 

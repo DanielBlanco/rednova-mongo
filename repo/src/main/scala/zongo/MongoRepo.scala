@@ -9,7 +9,7 @@ import mongo4cats.client.*
 import mongo4cats.database.*
 import mongo4cats.codecs.*
 import mongo4cats.collection.operations.*
-import mongo4cats.collection.operations.FilterExt._
+import mongo4cats.collection.operations.FilterExt.*
 import scala.reflect.ClassTag
 import zio.*
 import zio.stream.*
@@ -72,7 +72,7 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     getCollection.flatMap(_.insertMany(docs.toSeq))
 
   /** @see MongoRepo.remove */
-  def remove(id: MongoId): Task[DeleteResult] =
+  def remove(id: ObjectId): Task[DeleteResult] =
     remove(Filter.idEq(id))
 
   /** @see MongoRepo.remove */
@@ -85,9 +85,7 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
       c      <- getCollection
       filter  = (id: ObjectId) => Document("_id" -> id)
       update  = Document("$set", doc)
-      result <- doc._id match
-                  case None     => idNotFound
-                  case Some(id) => c.updateOne(filter(id), update)
+      result <- c.updateOne(filter(doc._id), update)
     } yield result
 
   /** @see MongoRepo.update */
