@@ -1,10 +1,10 @@
-// package zongo
+// package dev.rednova.mongo
 
 // import org.mongodb.scala.bson.Document
 
 // package object tests {
 
-//   final val DB     = "zongo_test"
+//   final val DB     = "rednova_mongo_test"
 //   final val COLL_1 = "samples1"
 //   final val COLL_2 = "samples2"
 

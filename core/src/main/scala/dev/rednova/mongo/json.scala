@@ -1,38 +1,31 @@
-package zongo
+package dev.rednova.mongo
 
 import com.mongodb.MongoClientException
 import mongo4cats.bson.*
 import mongo4cats.codecs.MongoCodecProvider
-import org.bson.codecs.{
-  Codec,
-  DecoderContext,
-  DocumentCodec,
-  EncoderContext,
-  StringCodec
-}
-import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
-import org.bson.{BsonReader, BsonType, BsonWriter, Document}
+import org.bson.codecs.{ Codec, DecoderContext, DocumentCodec, EncoderContext, StringCodec }
+import org.bson.codecs.configuration.{ CodecProvider, CodecRegistry }
+import org.bson.{ BsonReader, BsonType, BsonWriter, Document }
 import scala.reflect.ClassTag
 import zio.json.*
 
 /** Provides some Encoders/Decoders for zio-json */
 object json extends JsonCodecs:
 
-  final case class MongoJsonParsingException(jsonString: String, message: String)
-      extends MongoClientException(message)
+  final case class MongoJsonParsingException(jsonString: String, message: String) extends MongoClientException(message)
 
-  implicit def jsonCodecProvider[T: JsonEncoder: JsonDecoder: ClassTag]
-      : MongoCodecProvider[T] =
+  implicit def jsonCodecProvider[T: JsonEncoder: JsonDecoder: ClassTag]: MongoCodecProvider[T] =
     new MongoCodecProvider[T]:
       implicit val classT: Class[T]   =
         implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]]
       override def get: CodecProvider = zioJsonBasedCodecProvider[T]
 
-  private def zioJsonBasedCodecProvider[T](implicit
+  private def zioJsonBasedCodecProvider[T](
+      implicit
       enc: JsonEncoder[T],
       dec: JsonDecoder[T],
-      classT: Class[T]
-  ): CodecProvider =
+      classT: Class[T],
+    ): CodecProvider =
     new CodecProvider:
       override def get[Y](classY: Class[Y], registry: CodecRegistry): Codec[Y] =
         if (classY == classT || classT.isAssignableFrom(classY))
@@ -44,8 +37,8 @@ object json extends JsonCodecs:
             override def encode(
                 writer: BsonWriter,
                 t: Y,
-                encoderContext: EncoderContext
-            ): Unit =
+                encoderContext: EncoderContext,
+              ): Unit =
               enc.toJsonAST(t.asInstanceOf[T]) match
                 case Right(json)      =>
                   val document = Document.parse(json.toString())
@@ -54,15 +47,15 @@ object json extends JsonCodecs:
                   stringCodec.encode(
                     writer,
                     jsonString.replaceAll("\"", ""),
-                    encoderContext
+                    encoderContext,
                   )
 
             override def getEncoderClass: Class[Y] = classY
 
             override def decode(
                 reader: BsonReader,
-                decoderContext: DecoderContext
-            ): Y =
+                decoderContext: DecoderContext,
+              ): Y =
               reader.getCurrentBsonType match
                 case BsonType.DOCUMENT =>
                   val json = documentCodec.decode(reader, decoderContext).toJson()
@@ -70,7 +63,7 @@ object json extends JsonCodecs:
                     .fromJson(dec)
                     .fold(
                       e => throw MongoJsonParsingException(json, e),
-                      _.asInstanceOf[Y]
+                      _.asInstanceOf[Y],
                     )
                 case _                 =>
                   val string = stringCodec.decode(reader, decoderContext)
@@ -78,7 +71,7 @@ object json extends JsonCodecs:
                     .fromJson(dec)
                     .fold(
                       e => throw MongoJsonParsingException(string, e),
-                      _.asInstanceOf[Y]
+                      _.asInstanceOf[Y],
                     )
         else
           null // scalastyle:ignore

@@ -1,4 +1,4 @@
-package zongo
+package dev.rednova.mongo
 
 import zio.*
 import zio.prelude.*
@@ -7,7 +7,7 @@ import zio.prelude.Assertion.*
 /** New MongoUri type. */
 object MongoUri extends Subtype[String]:
 
-  override inline def assertion =
+  inline override def assertion =
     startsWith("mongodb")
 
 type MongoUri = MongoUri.Type

@@ -1,9 +1,9 @@
-package zongo
+package dev.rednova.mongo
 
 import mongo4cats.bson.*
 import mongo4cats.bson.syntax.*
 import support.*
-import zio.{Chunk, ZIO}
+import zio.{ Chunk, ZIO }
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
@@ -15,7 +15,7 @@ object MongoSpec extends BaseSpec:
       suite("MongoSpec")(tests: _*) @@ sequential
     ).provideLayerShared(specLayer)
 
-  def tests           = Chunk(
+  def tests = Chunk(
     test("healthcheck") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
@@ -36,7 +36,7 @@ object MongoSpec extends BaseSpec:
         _    <- Mongo.createCollections(collNames)(db)
         rslt <- Mongo.findCollectionNames(db)
       } yield assert(rslt)(hasSubset(collNames))
-    } @@ timeout(TIMEOUT)
+    } @@ timeout(TIMEOUT),
     // test("obj && arr") {
     //   for {
     //     db   <- Mongo.getDatabase(TEST_DB)

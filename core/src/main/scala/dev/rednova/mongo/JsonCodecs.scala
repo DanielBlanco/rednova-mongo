@@ -1,4 +1,4 @@
-package zongo
+package dev.rednova.mongo
 
 import mongo4cats.bson.*
 import mongo4cats.codecs.MongoCodecProvider
@@ -7,10 +7,10 @@ import zio.json.*
 
 trait JsonCodecs:
 
-  implicit val encodeObjectId: JsonEncoder[ObjectId] =
+  given encodeObjectId: JsonEncoder[ObjectId] =
     JsonEncoder[Map[String, String]].contramap(id => Map("$oid" -> id.toHexString()))
 
-  implicit val decodeObjectId: JsonDecoder[ObjectId] =
+  given decodeObjectId: JsonDecoder[ObjectId] =
     JsonDecoder[Map[String, String]].mapOrFail {
       _.get("$oid") match
         case None      =>

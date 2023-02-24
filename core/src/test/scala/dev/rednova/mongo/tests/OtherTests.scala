@@ -1,4 +1,4 @@
-// package zongo.tests
+// package dev.rednova.mongo.tests
 
 // import org.mongodb.scala.bson._
 // import org.mongodb.scala.model.Filters
@@ -9,8 +9,8 @@
 // import zio.test.Assertion._
 // import zio.test.TestAspect._
 // import zio.test.environment._
-// import zongo._
-// import zongo.support._
+// import dev.rednova.mongo._
+// import dev.rednova.mongo.support._
 
 // object OtherTests {
 

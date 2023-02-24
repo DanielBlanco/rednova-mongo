@@ -1,7 +1,8 @@
-package zongo.internal
+package dev.rednova.mongo.internal
 
 import com.mongodb.ReadPreference
 import com.mongodb.client.result.DeleteResult
+import dev.rednova.mongo.Mongo
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
 import mongo4cats.codecs.CodecRegistry
@@ -18,11 +19,10 @@ import zio.interop.catz.*
 import zio.interop.catz.implicits.*
 import zio.interop.reactivestreams.*
 import zio.stream.interop.fs2z.*
-import zongo.Mongo
 
 final case class MongoLive(
     val client: MongoClient
-) extends Mongo:
+  ) extends Mongo:
 
   /** @see Mongo.Service.database */
   def getDatabase(name: String): Task[MongoDatabase] =
@@ -31,14 +31,18 @@ final case class MongoLive(
   /** @see Mongo.Service.runCommand */
   def runCommand(
       command: Bson
-  )(db: MongoDatabase): Task[Document] =
+    )(
+      db: MongoDatabase
+    ): Task[Document] =
     db.runCommand(command)
 
   /** @see Mongo.Service.runCommand */
   def runCommand(
       command: Bson,
-      readPreference: ReadPreference
-  )(db: MongoDatabase): Task[Document] =
+      readPreference: ReadPreference,
+    )(
+      db: MongoDatabase
+    ): Task[Document] =
     db.runCommand(command, readPreference)
 
   /** @see Mongo.Service.findCollectionNames */
@@ -52,14 +56,18 @@ final case class MongoLive(
   /** @see Mongo.Service.getCollection */
   def getCollection(
       name: String
-  )(db: MongoDatabase): Task[MongoCollection[Document]] =
+    )(
+      db: MongoDatabase
+    ): Task[MongoCollection[Document]] =
     db.getCollection(name)
 
   /** @see Mongo.Service.getCollection */
   def getCollection[A: ClassTag](
       name: String,
-      codecRegistry: CodecRegistry
-  )(db: MongoDatabase): Task[MongoCollection[A]] =
+      codecRegistry: CodecRegistry,
+    )(
+      db: MongoDatabase
+    ): Task[MongoCollection[A]] =
     db.getCollection(name, codecRegistry)
 
   def dropCollection[A](c: MongoCollection[A]): Task[Unit] =
@@ -67,7 +75,7 @@ final case class MongoLive(
 
 object MongoLive:
 
-  def apply(uri: String)           =
+  def apply(uri: String) =
     connect(uri).map(client => new MongoLive(client))
 
   private def connect(uri: String) =

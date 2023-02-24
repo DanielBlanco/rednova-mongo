@@ -1,8 +1,9 @@
-package zongo
+package dev.rednova.mongo
 
 import com.mongodb.ReadPreference
 import com.mongodb.client.result.DeleteResult
-import org.bson.{BsonDocument, UuidRepresentation, BsonValue, BsonArray}
+import dev.rednova.mongo.internal.MongoLive
+import org.bson.{ BsonDocument, UuidRepresentation, BsonValue, BsonArray }
 import org.bson.codecs.*
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.conversions.Bson
@@ -12,14 +13,13 @@ import mongo4cats.codecs.CodecRegistry
 import mongo4cats.zio.*
 import mongo4cats.zio.ZMongoDatabase as MongoDatabase
 import mongo4cats.zio.ZMongoCollection as MongoCollection
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import scala.reflect.ClassTag
 import scala.jdk.CollectionConverters.*
 import zio.*
 import zio.prelude.*
 import zio.interop.reactivestreams.*
 import zio.stream.*
-import zongo.internal.MongoLive
 
 /** Defines the Mongo Service interface */
 trait Mongo:
@@ -78,8 +78,10 @@ trait Mongo:
     */
   def runCommand(
       command: Bson,
-      readPreference: ReadPreference
-  )(db: MongoDatabase): Task[Document]
+      readPreference: ReadPreference,
+    )(
+      db: MongoDatabase
+    ): Task[Document]
 
   /** Same as ping.
     *
@@ -110,9 +112,11 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def createCollection(name: String)(
+  def createCollection(
+      name: String
+    )(
       db: MongoDatabase
-  ): Task[Unit] =
+    ): Task[Unit] =
     runCommand(Document("create" := name))(db).map(_ => ())
 
   /** Create a chunk of mongo collections.
@@ -124,9 +128,11 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def createCollections(names: Chunk[String])(
+  def createCollections(
+      names: Chunk[String]
+    )(
       db: MongoDatabase
-  ): Task[Unit] =
+    ): Task[Unit] =
     ZIO.foreachPar(names)(createCollection(_)(db)).map(_ => ())
 
   /** Removes ALL records from a mongo collection.
@@ -151,7 +157,7 @@ trait Mongo:
     */
   def clearCollections[A](
       cs: Chunk[MongoCollection[A]]
-  ): Task[Chunk[DeleteResult]] =
+    ): Task[Chunk[DeleteResult]] =
     ZIO.foreachPar(cs)(clearCollection)
 
   /** Gets the Mongo collection to use.
@@ -165,7 +171,9 @@ trait Mongo:
     */
   def getCollection(
       name: String
-  )(db: MongoDatabase): Task[MongoCollection[Document]]
+    )(
+      db: MongoDatabase
+    ): Task[MongoCollection[Document]]
 
   /** Gets the Mongo collection to use for some Type.
     *
@@ -178,8 +186,10 @@ trait Mongo:
     */
   def getCollection[A: ClassTag](
       name: String,
-      codecRegistry: CodecRegistry
-  )(db: MongoDatabase): Task[MongoCollection[A]]
+      codecRegistry: CodecRegistry,
+    )(
+      db: MongoDatabase
+    ): Task[MongoCollection[A]]
 
   /** Gets the Mongo collections.
     *
@@ -192,7 +202,9 @@ trait Mongo:
     */
   def getCollections(
       names: Chunk[String]
-  )(db: MongoDatabase): Task[Chunk[MongoCollection[Document]]] =
+    )(
+      db: MongoDatabase
+    ): Task[Chunk[MongoCollection[Document]]] =
     ZIO.foreachPar(names)(getCollection(_)(db))
 
   /** Drops a mongo collection from database.
@@ -239,8 +251,8 @@ object Mongo:
       classOf[BsonDocument],
       CodecRegistries.fromRegistries(
         CodecRegistries.fromCodecs(new UuidCodec(UuidRepresentation.STANDARD)),
-        Bson.DEFAULT_CODEC_REGISTRY
-      )
+        Bson.DEFAULT_CODEC_REGISTRY,
+      ),
     )
 
   def getDatabase(name: String): MongoIO[MongoDatabase] =
@@ -260,8 +272,10 @@ object Mongo:
 
   def runCommand(
       command: Bson,
-      readPreference: ReadPreference
-  )(db: MongoDatabase): MongoIO[Document] =
+      readPreference: ReadPreference,
+    )(
+      db: MongoDatabase
+    ): MongoIO[Document] =
     ZIO.serviceWithZIO(_.runCommand(command, readPreference)(db))
 
   def healthcheck(db: MongoDatabase): MongoIO[Unit] =
@@ -270,14 +284,18 @@ object Mongo:
   def ping(db: MongoDatabase): MongoIO[String] =
     ZIO.serviceWithZIO(_.ping(db))
 
-  def createCollection(name: String)(
+  def createCollection(
+      name: String
+    )(
       db: MongoDatabase
-  ): MongoIO[Unit] =
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.createCollection(name)(db))
 
-  def createCollections(names: Chunk[String])(
+  def createCollections(
+      names: Chunk[String]
+    )(
       db: MongoDatabase
-  ): MongoIO[Unit] =
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.createCollections(names)(db))
 
   def clearCollection[A](c: MongoCollection[A]): MongoIO[DeleteResult] =
@@ -285,23 +303,29 @@ object Mongo:
 
   def clearCollections[A](
       cs: Chunk[MongoCollection[A]]
-  ): MongoIO[Chunk[DeleteResult]] =
+    ): MongoIO[Chunk[DeleteResult]] =
     ZIO.serviceWithZIO(_.clearCollections(cs))
 
   def getCollection(
       name: String
-  )(db: MongoDatabase): MongoIO[MongoCollection[Document]] =
+    )(
+      db: MongoDatabase
+    ): MongoIO[MongoCollection[Document]] =
     ZIO.serviceWithZIO(_.getCollection(name)(db))
 
   def getCollection[A: ClassTag](
       name: String,
-      codecRegistry: CodecRegistry
-  )(db: MongoDatabase): MongoIO[MongoCollection[A]] =
+      codecRegistry: CodecRegistry,
+    )(
+      db: MongoDatabase
+    ): MongoIO[MongoCollection[A]] =
     ZIO.serviceWithZIO(_.getCollection(name, codecRegistry)(db))
 
   def getCollections(
       names: Chunk[String]
-  )(db: MongoDatabase): MongoIO[Chunk[MongoCollection[Document]]] =
+    )(
+      db: MongoDatabase
+    ): MongoIO[Chunk[MongoCollection[Document]]] =
     ZIO.serviceWithZIO(_.getCollections(names)(db))
 
   def dropCollection[A](c: MongoCollection[A]): MongoIO[Unit] =

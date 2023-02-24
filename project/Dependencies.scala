@@ -2,16 +2,15 @@ import sbt._
 
 object Dependencies {
   object V {
-    val mongo4cats      = "0.6.6"
-    val circe           = "0.14.3"
-    val zio             = "2.0.5"
-    val zioCats         = "3.3.0"
-    val zioConfig       = "3.0.7"
+    val mongo4cats      = "0.6.7"
+    val circe           = "0.14.4"
+    val zio             = "2.0.9"
+    val zioCats         = "23.0.0.0"
+    val zioConfig       = "4.0.0-RC9"
     val zioJson         = "0.4.2"
-    val zioLogging      = "2.1.7"
-    val zioMagic        = "0.3.11"
+    val zioLogging      = "2.1.10"
     val zioPrelude      = "1.0.0-RC16"
-    val zioReactStreams = "2.0.0"
+    val zioReactStreams = "2.0.1"
   }
 
   /** Used in RepoTests */

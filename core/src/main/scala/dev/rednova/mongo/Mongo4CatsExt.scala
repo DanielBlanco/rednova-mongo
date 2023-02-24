@@ -1,6 +1,6 @@
 package mongo4cats.operations
 
-import zongo.Mongo
+import dev.rednova.mongo.Mongo
 import mongo4cats.queries.FindQueryBuilder
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Field
@@ -13,7 +13,7 @@ extension (a: Filter)
 extension (agg: Aggregate)
   def set[TExpression](
       fields: List[(String, TExpression)]
-  ): Aggregate =
+    ): Aggregate =
     AggregateBuilder(
       Aggregates.set(
         fields.map(f => new Field(f._1, f._2)).reverse.asJava

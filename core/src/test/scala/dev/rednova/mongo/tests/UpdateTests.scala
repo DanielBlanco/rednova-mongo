@@ -1,4 +1,4 @@
-// package zongo.tests
+// package dev.rednova.mongo.tests
 
 // import org.bson.BsonString
 // import org.mongodb.scala.model.{Filters, Updates}
@@ -8,8 +8,8 @@
 // import zio.test.Assertion._
 // import zio.test.TestAspect._
 // import zio.test.environment._
-// import zongo._
-// import zongo.support._
+// import dev.rednova.mongo._
+// import dev.rednova.mongo.support._
 
 // object UpdateTests {
 

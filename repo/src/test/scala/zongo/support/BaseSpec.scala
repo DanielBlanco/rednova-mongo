@@ -1,5 +1,6 @@
-package zongo.support
+package dev.rednova.mongo.support
 
+import dev.rednova.mongo.*
 import zio.*
 import zio.config.*
 import zio.config.syntax.*
@@ -7,13 +8,12 @@ import zio.config.ConfigDescriptor.*
 import zio.config.typesafe.*
 import zio.test.*
 import zio.test.Assertion.*
-import zongo.*
 
 trait BaseSpec extends ZIOSpecDefault:
   override def aspects = Chunk(TestAspect.timeout(60.seconds))
 
   final val TIMEOUT = 1.second
-  final val TEST_DB = "zongo_test"
+  final val TEST_DB = "rednova_mongo_test"
 
   // ---- ZIO Layer setup
 
