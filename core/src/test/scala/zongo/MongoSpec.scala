@@ -1,6 +1,7 @@
 package zongo
 
 import mongo4cats.bson.*
+import mongo4cats.bson.syntax.*
 import support.*
 import zio.{Chunk, ZIO}
 import zio.test.*
@@ -10,8 +11,9 @@ import zio.test.TestAspect.*
 object MongoSpec extends BaseSpec:
 
   def spec =
-    (suite("MongoSpec")(tests: _*) @@ sequential)
-      .provideCustomLayerShared(specLayer)
+    (
+      suite("MongoSpec")(tests: _*) @@ sequential
+    ).provideLayerShared(specLayer)
 
   def tests           = Chunk(
     test("healthcheck") {
@@ -32,14 +34,23 @@ object MongoSpec extends BaseSpec:
         old  <- Mongo.getCollections(collNames)(db)
         _    <- Mongo.dropCollections(old)
         _    <- Mongo.createCollections(collNames)(db)
-        _    <- ZIO.unit
         rslt <- Mongo.findCollectionNames(db)
       } yield assert(rslt)(hasSubset(collNames))
     } @@ timeout(TIMEOUT)
+    // test("obj && arr") {
+    //   for {
+    //     db   <- Mongo.getDatabase(TEST_DB)
+    //     old  <- Mongo.getCollections(collNames)(db)
+    //     _    <- Mongo.dropCollections(old)
+    //     _    <- Mongo.createCollections(collNames)(db)
+    //     qry   = Mongo.obj("")
+    //     rslt <- Mongo.findCollectionNames(db)
+    //   } yield assert(rslt)(hasSubset(collNames))
+    // } @@ timeout(TIMEOUT),
   )
 
   final val collNames = Chunk("coll_1", "coll_2")
 
-  private def createCmd(name: String) = Document("create" -> name)
+  private def createCmd(name: String) = Document("create" := name)
 
-  private def dropCmd(name: String) = Document("drop" -> name)
+  private def dropCmd(name: String) = Document("drop" := name)

@@ -1,9 +1,10 @@
 package zongo
 
 import mongo4cats.bson.ObjectId
-import mongo4cats.collection.operations.*
+import mongo4cats.operations.*
 import com.mongodb.client.model.Filters
 import java.util.UUID
+import scala.util.chaining.*
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
@@ -13,8 +14,10 @@ import zongo.support.*
 object MongoRepoSpec extends BaseSpec:
 
   def spec =
-    (suite("RepoMongoSpec")(tests: _*) @@ sequential)
-      .provideCustomLayerShared(specLayer)
+    (
+      suite("RepoMongoSpec")(tests: _*)
+        @@ sequential
+    ).provideLayerShared(specLayer)
 
   def tests = Chunk(
     test("explain works") {
@@ -25,6 +28,15 @@ object MongoRepoSpec extends BaseSpec:
         expl <- ItemsRepo.explain(inName("Luis", "John"))
         xpct  = "filter=Document{{name=Document{{$in=[John, Luis]}}}}"
       } yield assert(expl.toString)(containsString(xpct))
+    },
+    test("aggregate works") {
+      for {
+        _      <- ItemsRepo.removeAll
+        _      <- ItemsRepo.insertMany(bulkInsertData)
+        agg     = Accumulator.sum("count", 1).pipe(Aggregate.group("$name", _))
+        counts <- ItemsRepo.aggregate[Counter](agg)
+      } yield assert(counts.size)(equalTo(3)) &&
+        assert(counts.map(_.count))(equalTo(Chunk(1, 1, 1)))
     },
     test("find works") {
       for {

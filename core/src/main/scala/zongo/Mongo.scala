@@ -2,14 +2,19 @@ package zongo
 
 import com.mongodb.ReadPreference
 import com.mongodb.client.result.DeleteResult
-import org.bson.{BsonDocument, UuidRepresentation}
+import org.bson.{BsonDocument, UuidRepresentation, BsonValue, BsonArray}
 import org.bson.codecs.*
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
+import mongo4cats.bson.syntax.*
 import mongo4cats.codecs.CodecRegistry
+import mongo4cats.zio.*
+import mongo4cats.zio.ZMongoDatabase as MongoDatabase
+import mongo4cats.zio.ZMongoCollection as MongoCollection
 import scala.util.{Failure, Success, Try}
 import scala.reflect.ClassTag
+import scala.jdk.CollectionConverters.*
 import zio.*
 import zio.prelude.*
 import zio.interop.reactivestreams.*
@@ -35,15 +40,16 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def dropDatabase(db: MongoDatabase): Task[Unit]
+  def dropDatabase(db: MongoDatabase): Task[Unit] =
+    db.drop
 
   /** Clears the data from all Mongo collections. */
   def clearDatabase(db: MongoDatabase): Task[Unit] =
-    for {
+    for
       names <- findCollectionNames(db)
       colls <- getCollections(names)(db)
       _     <- clearCollections(colls)
-    } yield ()
+    yield ()
 
   /** Find the available collections. */
   def findCollectionNames(db: MongoDatabase): Task[Chunk[String]]
@@ -93,7 +99,7 @@ trait Mongo:
     *   pong
     */
   def ping(db: MongoDatabase): Task[String] =
-    runCommand(Document("ping" -> "ping"))(db).map(_ => "pong")
+    runCommand(Document("ping" := "ping"))(db).map(_ => "pong")
 
   /** Create a mongo collection.
     *
@@ -107,7 +113,7 @@ trait Mongo:
   def createCollection(name: String)(
       db: MongoDatabase
   ): Task[Unit] =
-    runCommand(Document("create" -> name))(db).map(_ => ())
+    runCommand(Document("create" := name))(db).map(_ => ())
 
   /** Create a chunk of mongo collections.
     *

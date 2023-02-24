@@ -1,10 +1,14 @@
 package zongo.internal
 
 import com.mongodb.ReadPreference
-import java.io.Closeable
+import com.mongodb.client.result.DeleteResult
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
 import mongo4cats.codecs.CodecRegistry
+import mongo4cats.zio.*
+import mongo4cats.zio.ZMongoClient as MongoClient
+import mongo4cats.zio.ZMongoDatabase as MongoDatabase
+import mongo4cats.zio.ZMongoCollection as MongoCollection
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import zio.*
@@ -14,8 +18,7 @@ import zio.interop.catz.*
 import zio.interop.catz.implicits.*
 import zio.interop.reactivestreams.*
 import zio.stream.interop.fs2z.*
-import zongo.{Mongo, MongoClient, MongoDatabase, MongoCollection}
-import com.mongodb.client.result.DeleteResult
+import zongo.Mongo
 
 final case class MongoLive(
     val client: MongoClient
@@ -24,10 +27,6 @@ final case class MongoLive(
   /** @see Mongo.Service.database */
   def getDatabase(name: String): Task[MongoDatabase] =
     client.getDatabase(name)
-
-  /** @see Mongo.Service.dropDatabase */
-  def dropDatabase(db: MongoDatabase): Task[Unit] =
-    db.drop
 
   /** @see Mongo.Service.runCommand */
   def runCommand(
@@ -68,8 +67,8 @@ final case class MongoLive(
 
 object MongoLive:
 
-  def apply(uri: String): RIO[Scope, MongoLive] =
+  def apply(uri: String)           =
     connect(uri).map(client => new MongoLive(client))
 
-  private def connect(uri: String)              =
-    mongo4cats.client.MongoClient.fromConnectionString[Task](uri).toScopedZIO
+  private def connect(uri: String) =
+    ZMongoClient.fromConnectionString(uri)

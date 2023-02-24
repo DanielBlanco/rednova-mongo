@@ -5,12 +5,21 @@ import com.mongodb.client.result.*
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 import mongo4cats.bson.*
-import mongo4cats.collection.operations.*
+import mongo4cats.codecs.MongoCodecProvider
+import mongo4cats.operations.*
+import mongo4cats.zio.*
+import scala.reflect.ClassTag
 import zio.*
 import zio.json.*
 import zio.stream.*
 import zongo.*
 import zongo.json.*
+
+case class Counter(count: Int) extends Product
+object Counter:
+  implicit val jsonDecoder: JsonDecoder[Counter]       = DeriveJsonDecoder.gen[Counter]
+  implicit val jsonEncoder: JsonEncoder[Counter]       = DeriveJsonEncoder.gen[Counter]
+  implicit val mongoCodec: MongoCodecProvider[Counter] = jsonCodecProvider[Counter]
 
 case class Item(
     _id: ObjectId,
@@ -33,6 +42,8 @@ trait ItemsRepo:
 
   def explain(filter: Filter): Task[Document]
 
+  def aggregate[Y: ClassTag: MongoCodecProvider](agg: Aggregate): Task[Chunk[Y]]
+
   def finder: Task[FindQueryBuilder[Item]]
 
   def findChunks: Task[Chunk[Item]]
@@ -53,7 +64,7 @@ trait ItemsRepo:
 
   def removeAll: Task[DeleteResult] = clearCollection
 
-  def translate(filter: Filter): Task[String]
+  // def translate(filter: Filter): Task[String]
 
   def update(doc: Item): Task[UpdateResult]
 
@@ -78,6 +89,11 @@ object ItemsRepo:
 
   def explain(filter: Filter): ItemsRepoIO[Document] =
     ZIO.serviceWithZIO(_.explain(filter))
+
+  def aggregate[Y: ClassTag: MongoCodecProvider](
+      agg: Aggregate
+  ): ItemsRepoIO[Chunk[Y]] =
+    ZIO.serviceWithZIO(_.aggregate[Y](agg))
 
   def finder: ItemsRepoIO[FindQueryBuilder[Item]] =
     ZIO.serviceWithZIO(_.finder)
@@ -109,8 +125,8 @@ object ItemsRepo:
   def removeAll: ItemsRepoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.removeAll)
 
-  def translate(filter: Filter): ItemsRepoIO[String] =
-    ZIO.serviceWithZIO(_.translate(filter))
+  // def translate(filter: Filter): ItemsRepoIO[String] =
+  //   ZIO.serviceWithZIO(_.translate(filter))
 
   def update(doc: Item): ItemsRepoIO[UpdateResult] =
     ZIO.serviceWithZIO(_.update(doc))
@@ -126,9 +142,12 @@ final case class ItemsRepoLive(repo: MongoRepo[Item]) extends ItemsRepo:
 
   def count(filter: Filter): Task[Long] = repo.count(filter)
 
-  def translate(filter: Filter): Task[String] = repo.translate(filter)
+  // def translate(filter: Filter): Task[String] = repo.translate(filter)
 
   def explain(filter: Filter): Task[Document] = repo.explain(filter)
+
+  def aggregate[Y: ClassTag: MongoCodecProvider](agg: Aggregate): Task[Chunk[Y]] =
+    repo.aggregate[Y](agg)
 
   def finder: Task[FindQueryBuilder[Item]] = repo.finder
 
@@ -163,3 +182,5 @@ final case class ItemsRepoLive(repo: MongoRepo[Item]) extends ItemsRepo:
 
   def update(query: Filter, update: Update): Task[UpdateResult] =
     repo.update(query, update)
+
+end ItemsRepoLive

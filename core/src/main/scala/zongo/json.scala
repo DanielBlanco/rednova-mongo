@@ -23,21 +23,20 @@ object json extends JsonCodecs:
 
   implicit def jsonCodecProvider[T: JsonEncoder: JsonDecoder: ClassTag]
       : MongoCodecProvider[T] =
-    new MongoCodecProvider[T] {
+    new MongoCodecProvider[T]:
       implicit val classT: Class[T]   =
         implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]]
       override def get: CodecProvider = zioJsonBasedCodecProvider[T]
-    }
 
   private def zioJsonBasedCodecProvider[T](implicit
       enc: JsonEncoder[T],
       dec: JsonDecoder[T],
       classT: Class[T]
   ): CodecProvider =
-    new CodecProvider {
+    new CodecProvider:
       override def get[Y](classY: Class[Y], registry: CodecRegistry): Codec[Y] =
         if (classY == classT || classT.isAssignableFrom(classY))
-          new Codec[Y] {
+          new Codec[Y]:
             private val documentCodec: Codec[Document] =
               new DocumentCodec(registry).asInstanceOf[Codec[Document]]
             private val stringCodec: Codec[String]     = new StringCodec()
@@ -81,8 +80,5 @@ object json extends JsonCodecs:
                       e => throw MongoJsonParsingException(string, e),
                       _.asInstanceOf[Y]
                     )
-
-          }
         else
           null // scalastyle:ignore
-    }

@@ -5,11 +5,12 @@ import com.mongodb.client.result.*
 import org.bson.BsonDocument
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
+import mongo4cats.bson.syntax.*
 import mongo4cats.client.*
 import mongo4cats.database.*
 import mongo4cats.codecs.*
-import mongo4cats.collection.operations.*
-import mongo4cats.collection.operations.FilterExt.*
+import mongo4cats.operations.*
+import mongo4cats.zio.*
 import scala.reflect.ClassTag
 import zio.*
 import zio.stream.*
@@ -40,20 +41,26 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     finder.flatMap(_.filter(filter).explain)
 
   /** Convert a filter into a string which can then be printed. */
-  def translate(filter: Filter): Task[String] =
-    ZIO.attempt(filter.translate)
+  // def translate(filter: Filter): Task[String] =
+  //   ZIO.attempt(filter.translate)
 
-  /** @see MongoRepo.finder */
-  def finder: Task[FindQueryBuilder[D]] =
+  /** Allow us to run an aggregate. */
+  def aggregate[Y: ClassTag: MongoCodecProvider](agg: Aggregate): Task[Chunk[Y]] =
+    getCollection.flatMap(
+      _.aggregateWithCodec[Y](agg).all.map(Chunk.fromIterable)
+    )
+
+  /** Returns a finder object */
+  def finder =
     getCollection.map(_.find)
 
   /** Returns a query builder to find documents matching some criteria. */
   def findChunks: Task[Chunk[D]] =
-    finder.flatMap(_.chunks)
+    finder.flatMap(_.all.map(Chunk.fromIterable))
 
   /** Returns a query builder to find documents matching some criteria. */
   def findChunks(filter: Filter): Task[Chunk[D]] =
-    finder.flatMap(_.filter(filter).chunks)
+    finder.flatMap(_.filter(filter).all.map(Chunk.fromIterable))
 
   /** Returns a query builder to find documents matching some criteria. */
   def findFirst: Task[Option[D]] =
@@ -80,13 +87,13 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     getCollection.flatMap(_.deleteMany(filter))
 
   /** @see MongoRepo.update */
-  def update(doc: D): Task[UpdateResult] =
-    for {
-      c      <- getCollection
-      filter  = (id: ObjectId) => Document("_id" -> id)
-      update  = Document("$set", doc)
-      result <- c.updateOne(filter(doc._id), update)
-    } yield result
+  def update(doc: D): Task[UpdateResult] = ???
+  // for {
+  //   c      <- getCollection
+  //   filter  = (id: ObjectId) => Document("_id" := id)
+  //   update  = Document("$set" := doc)
+  //   result <- c.updateOne(filter(doc._id), update)
+  // } yield result
 
   /** @see MongoRepo.update */
   def update(

@@ -2,15 +2,15 @@ import sbt._
 
 object Dependencies {
   object V {
-    val mongo4cats      = "0.4.8"
-    val circe           = "0.14.2"
-    val zio             = "2.0.0"
+    val mongo4cats      = "0.6.6"
+    val circe           = "0.14.3"
+    val zio             = "2.0.5"
     val zioCats         = "3.3.0"
-    val zioConfig       = "3.0.1"
-    val zioJson         = "0.3.0-RC9"
-    val zioLogging      = "2.0.0"
+    val zioConfig       = "3.0.7"
+    val zioJson         = "0.4.2"
+    val zioLogging      = "2.1.7"
     val zioMagic        = "0.3.11"
-    val zioPrelude      = "1.0.0-RC15"
+    val zioPrelude      = "1.0.0-RC16"
     val zioReactStreams = "2.0.0"
   }
 
@@ -26,16 +26,17 @@ object Dependencies {
 
   object MongoDB {
     val libs = Seq(
-      "io.github.kirill5k" %% "mongo4cats-core" % V.mongo4cats
-      // "org.mongodb.scala" %% "mongo-scala-bson"   % V.mongo,
-      // "org.mongodb.scala" %% "mongo-scala-driver" % V.mongo
+      "io.github.kirill5k" %% "mongo4cats-core" % V.mongo4cats,
+      "io.github.kirill5k" %% "mongo4cats-core" % V.mongo4cats,
+      "io.github.kirill5k" %% "mongo4cats-zio"  % V.mongo4cats
     )
   }
 
   object Testing {
     val libs = Seq(
-      "dev.zio" %% s"zio-test"     % V.zio % Test,
-      "dev.zio" %% s"zio-test-sbt" % V.zio % Test
+      "dev.zio"            %% s"zio-test"               % V.zio        % Test,
+      "dev.zio"            %% s"zio-test-sbt"           % V.zio        % Test,
+      "io.github.kirill5k" %% "mongo4cats-zio-embedded" % V.mongo4cats % Test
     )
 
     val framework = new TestFramework("zio.test.sbt.ZTestFramework")
