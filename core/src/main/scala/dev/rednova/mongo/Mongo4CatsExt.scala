@@ -5,6 +5,8 @@ import mongo4cats.queries.FindQueryBuilder
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Field
 import scala.jdk.CollectionConverters.*
+import zio.*
+import zio.stream.ZStream
 
 extension (a: Filter)
   def translate: String =
