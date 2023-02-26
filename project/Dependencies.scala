@@ -13,17 +13,17 @@ object Dependencies {
   }
 
   val libs = Seq(
-    "io.github.kirill5k" %% "mongo4cats-core" % V.mongo4cats,
-    "io.github.kirill5k" %% "mongo4cats-zio"  % V.mongo4cats,
-      "dev.zio" %% "zio"                         % V.zio,
-      "dev.zio" %% "zio-interop-cats"            % V.zioCats,
-      "dev.zio" %% "zio-interop-reactivestreams" % V.zioReactStreams,
-      "dev.zio" %% "zio-config"                  % V.zioConfig,
-      "dev.zio" %% "zio-config-typesafe"         % V.zioConfig,
-      "dev.zio" %% "zio-logging"                 % V.zioLogging,
-      "dev.zio" %% "zio-logging-slf4j"           % V.zioLogging,
-      "dev.zio" %% "zio-json"                    % V.zioJson,
-      "dev.zio" %% "zio-prelude"                 % V.zioPrelude
+    "io.github.kirill5k" %% "mongo4cats-core"             % V.mongo4cats,
+    "io.github.kirill5k" %% "mongo4cats-zio"              % V.mongo4cats,
+    "dev.zio"            %% "zio"                         % V.zio,
+    "dev.zio"            %% "zio-interop-cats"            % V.zioCats,
+    "dev.zio"            %% "zio-interop-reactivestreams" % V.zioReactStreams,
+    "dev.zio"            %% "zio-config"                  % V.zioConfig,
+    "dev.zio"            %% "zio-config-typesafe"         % V.zioConfig,
+    "dev.zio"            %% "zio-logging"                 % V.zioLogging,
+    "dev.zio"            %% "zio-logging-slf4j"           % V.zioLogging,
+    "dev.zio"            %% "zio-json"                    % V.zioJson,
+    "dev.zio"            %% "zio-prelude"                 % V.zioPrelude
   )
 
   object Testing {
