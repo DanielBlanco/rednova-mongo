@@ -1,4 +1,4 @@
-# ZONGO
+# rednova-mongo
 Helper methods to use Mongo4Cats with ZIO.
 
 I'm using this for my own projects waiting for someone to provide a better Library
@@ -14,9 +14,9 @@ Just import the library into your Scala dependencies.
 
 ## Author
 
-Daniel Blanco Rojas [dblancorojas.dev](https://dblancorojas.dev)
+Daniel Blanco Rojas [@dblancorojas](https://twitter.com/dblancorojas)
 
 ## License
 
-Zongo is provided under the [MIT license](https://github.com/DanielBlanco/zongo/blob/master/LICENSE).
+Provided under the [MIT license](https://github.com/DanielBlanco/rednova-mongo/blob/master/LICENSE).
 
