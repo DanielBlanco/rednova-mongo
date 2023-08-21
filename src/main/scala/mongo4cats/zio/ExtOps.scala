@@ -5,13 +5,22 @@ import com.mongodb.client.model.Field
 import scala.jdk.CollectionConverters.*
 import mongo4cats.zio.Mongo
 
-extension (a: Filter)
+extension (
+    a: Filter
+  )
   def translate: String =
     Mongo.bsonToBsonDocument(a.toBson).toString
 
-extension (agg: Aggregate)
+extension (
+    agg: Aggregate
+  )
   def set[TExpression](
-      fields: List[(String, TExpression)]
+      fields: List[
+        (
+            String,
+            TExpression,
+          )
+      ]
     ): Aggregate =
     AggregateBuilder(
       Aggregates.set(

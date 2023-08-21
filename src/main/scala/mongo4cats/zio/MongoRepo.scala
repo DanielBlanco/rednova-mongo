@@ -11,6 +11,7 @@ import mongo4cats.database.*
 import mongo4cats.codecs.*
 import mongo4cats.operations.*
 import mongo4cats.zio.*
+import mongo4cats.zio.json.*
 import scala.reflect.ClassTag
 import _root_.zio.*
 import _root_.zio.stream.*
@@ -23,7 +24,8 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     mongo: Mongo,
     databaseName: String,
     collectionName: String,
-  )(using cp: MongoCodecProvider[D],
+  )(using
+    cp: MongoCodecProvider[D],
     enc: JsonEncoder[D],
   ):
 
@@ -36,20 +38,28 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     getCollection.flatMap(_.count)
 
   /** @see MongoRepo.count */
-  def count(filter: Filter): Task[Long] =
+  def count(
+      filter: Filter
+    ): Task[Long] =
     getCollection.flatMap(_.count(filter))
 
   /** Explain the execution plan for this operation with the server's default verbosity level.
     */
-  def explain(filter: Filter): Task[Document] =
+  def explain(
+      filter: Filter
+    ): Task[Document] =
     finder.flatMap(_.filter(filter).explain)
 
   /** Convert a filter into a string which can then be printed. */
-  def translate(filter: Filter): Task[String] =
+  def translate(
+      filter: Filter
+    ): Task[String] =
     ZIO.attempt(filter.translate)
 
   /** Allow us to run an aggregate. */
-  def aggregate[Y: ClassTag: MongoCodecProvider](agg: Aggregate): Task[Chunk[Y]] =
+  def aggregate[Y: ClassTag: MongoCodecProvider](
+      agg: Aggregate
+    ): Task[Chunk[Y]] =
     getCollection.flatMap(
       _.aggregateWithCodec[Y](agg).all.map(Chunk.fromIterable)
     )
@@ -63,7 +73,9 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     finder.flatMap(_.all.map(Chunk.fromIterable))
 
   /** Returns a query builder to find documents matching some criteria. */
-  def findChunks(filter: Filter): Task[Chunk[D]] =
+  def findChunks(
+      filter: Filter
+    ): Task[Chunk[D]] =
     finder.flatMap(_.filter(filter).all.map(Chunk.fromIterable))
 
   /** Returns a query builder to find documents matching some criteria. */
@@ -71,27 +83,39 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
     finder.flatMap(_.first)
 
   /** Returns a query builder to find documents matching some criteria. */
-  def findFirst(filter: Filter): Task[Option[D]] =
+  def findFirst(
+      filter: Filter
+    ): Task[Option[D]] =
     finder.flatMap(_.filter(filter).first)
 
   /** @see MongoRepo.insert */
-  def insert(doc: D): Task[InsertOneResult] =
+  def insert(
+      doc: D
+    ): Task[InsertOneResult] =
     getCollection.flatMap(_.insertOne(doc))
 
   /** @see MongoRepo.insertMany */
-  def insertMany(docs: Chunk[D]): Task[InsertManyResult] =
+  def insertMany(
+      docs: Chunk[D]
+    ): Task[InsertManyResult] =
     getCollection.flatMap(_.insertMany(docs.toSeq))
 
   /** @see MongoRepo.remove */
-  def remove(id: ObjectId): Task[DeleteResult] =
+  def remove(
+      id: ObjectId
+    ): Task[DeleteResult] =
     remove(Filter.idEq(id))
 
   /** @see MongoRepo.remove */
-  def remove(filter: Filter): Task[DeleteResult] =
+  def remove(
+      filter: Filter
+    ): Task[DeleteResult] =
     getCollection.flatMap(_.deleteMany(filter))
 
   /** @see MongoRepo.update */
-  def update(doc: D): Task[UpdateResult] =
+  def update(
+      doc: D
+    ): Task[UpdateResult] =
     for
       c       <- getCollection
       filter   = (id: ObjectId) => Document("_id" := id)

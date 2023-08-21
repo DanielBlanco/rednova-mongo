@@ -1,5 +1,5 @@
 # ZONGO
-ZIO thin wrapper for Mongo4Cats.
+Helper methods to use Mongo4Cats with ZIO.
 
 I'm using this for my own projects waiting for someone to provide a better Library
 that I can use.
@@ -9,12 +9,8 @@ that I can use.
 Just import the library into your Scala dependencies.
 
 ```
-"dev.dblancorojas" %% "zongo-core"  % "0.1.0"
-"dev.dblancorojas" %% "zongo-repo"  % "0.1.0"
-"dev.dblancorojas" %% "zongo-circe" % "0.1.0"
+"dev.rednova" %% "mongo" % "0.1.0",
 ```
-
-`zongo-core` provides `zio-json` support.
 
 ## Author
 

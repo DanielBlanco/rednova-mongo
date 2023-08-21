@@ -22,7 +22,9 @@ trait Mongo:
     * @return
     *   the database wrapped in a ZIO.
     */
-  def getDatabase(name: String): Task[ZMongoDatabase]
+  def getDatabase(
+      name: String
+    ): Task[ZMongoDatabase]
 
   /** Drops the database.
     *
@@ -31,10 +33,14 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def dropDatabase(db: ZMongoDatabase): Task[Unit]
+  def dropDatabase(
+      db: ZMongoDatabase
+    ): Task[Unit]
 
   /** Clears the data from all Mongo collections. */
-  def clearDatabase(db: ZMongoDatabase): Task[Unit] =
+  def clearDatabase(
+      db: ZMongoDatabase
+    ): Task[Unit] =
     for
       names <- findCollectionNames(db)
       colls <- getCollections(names)(db)
@@ -42,7 +48,9 @@ trait Mongo:
     yield ()
 
   /** Find the available collections. */
-  def findCollectionNames(db: ZMongoDatabase): Task[Chunk[String]]
+  def findCollectionNames(
+      db: ZMongoDatabase
+    ): Task[Chunk[String]]
 
   /** Executes command in the context of the current database.
     *
@@ -53,7 +61,11 @@ trait Mongo:
     * @return
     *   a ZIO Stream containing the command result.
     */
-  def runCommand(command: Bson)(db: ZMongoDatabase): Task[Document]
+  def runCommand(
+      command: Bson
+    )(
+      db: ZMongoDatabase
+    ): Task[Document]
 
   /** Executes command in the context of the current database.
     *
@@ -80,7 +92,9 @@ trait Mongo:
     * @return
     *   nothing useful.
     */
-  def healthcheck(db: ZMongoDatabase): Task[Unit] =
+  def healthcheck(
+      db: ZMongoDatabase
+    ): Task[Unit] =
     ping(db).map(_ => ())
 
   /** Runs a query and if no error is returned all is good.
@@ -90,7 +104,9 @@ trait Mongo:
     * @return
     *   pong
     */
-  def ping(db: ZMongoDatabase): Task[String] =
+  def ping(
+      db: ZMongoDatabase
+    ): Task[String] =
     runCommand(Document("ping" := "ping"))(db).map(_ => "pong")
 
   /** Create a mongo collection.
@@ -134,7 +150,9 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def clearCollection[A](c: ZMongoCollection[A]): Task[DeleteResult]
+  def clearCollection[A](
+      c: ZMongoCollection[A]
+    ): Task[DeleteResult]
 
   /** Removes ALL records from chunk of mongo collection.
     *
@@ -206,7 +224,9 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def dropCollection[A](c: ZMongoCollection[A]): Task[Unit]
+  def dropCollection[A](
+      c: ZMongoCollection[A]
+    ): Task[Unit]
 
   /** Drops a chunk of mongo collections from database.
     *
@@ -217,7 +237,9 @@ trait Mongo:
     * @return
     *   unit.
     */
-  def dropCollections[A](cs: Chunk[ZMongoCollection[A]]): Task[Unit] =
+  def dropCollections[A](
+      cs: Chunk[ZMongoCollection[A]]
+    ): Task[Unit] =
     ZIO.foreachPar(cs)(dropCollection(_)).map(_ => ())
 
 /** Defines accesor & helper methods */
@@ -232,7 +254,9 @@ object Mongo:
     * @return
     *   a ZLayer.
     */
-  def live(uri: String): ULayer[Mongo] =
+  def live(
+      uri: String
+    ): ULayer[Mongo] =
     ZLayer.scoped(MongoLive(uri)).orDie
 
   /** @note This will help us debug queries. */
@@ -245,19 +269,31 @@ object Mongo:
       ),
     )
 
-  def getDatabase(name: String): MongoIO[ZMongoDatabase] =
+  def getDatabase(
+      name: String
+    ): MongoIO[ZMongoDatabase] =
     ZIO.serviceWithZIO(_.getDatabase(name))
 
-  def dropDatabase(db: ZMongoDatabase): MongoIO[Unit] =
+  def dropDatabase(
+      db: ZMongoDatabase
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.dropDatabase(db))
 
-  def clearDatabase(db: ZMongoDatabase): MongoIO[Unit] =
+  def clearDatabase(
+      db: ZMongoDatabase
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.clearDatabase(db))
 
-  def findCollectionNames(db: ZMongoDatabase): MongoIO[Chunk[String]] =
+  def findCollectionNames(
+      db: ZMongoDatabase
+    ): MongoIO[Chunk[String]] =
     ZIO.serviceWithZIO(_.findCollectionNames(db))
 
-  def runCommand(command: Bson)(db: ZMongoDatabase): MongoIO[Document] =
+  def runCommand(
+      command: Bson
+    )(
+      db: ZMongoDatabase
+    ): MongoIO[Document] =
     ZIO.serviceWithZIO(_.runCommand(command)(db))
 
   def runCommand(
@@ -268,10 +304,14 @@ object Mongo:
     ): MongoIO[Document] =
     ZIO.serviceWithZIO(_.runCommand(command, readPreference)(db))
 
-  def healthcheck(db: ZMongoDatabase): MongoIO[Unit] =
+  def healthcheck(
+      db: ZMongoDatabase
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.healthcheck(db))
 
-  def ping(db: ZMongoDatabase): MongoIO[String] =
+  def ping(
+      db: ZMongoDatabase
+    ): MongoIO[String] =
     ZIO.serviceWithZIO(_.ping(db))
 
   def createCollection(
@@ -288,7 +328,9 @@ object Mongo:
     ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.createCollections(names)(db))
 
-  def clearCollection[A](c: ZMongoCollection[A]): MongoIO[DeleteResult] =
+  def clearCollection[A](
+      c: ZMongoCollection[A]
+    ): MongoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.clearCollection(c))
 
   def clearCollections[A](
@@ -318,8 +360,12 @@ object Mongo:
     ): MongoIO[Chunk[ZMongoCollection[Document]]] =
     ZIO.serviceWithZIO(_.getCollections(names)(db))
 
-  def dropCollection[A](c: ZMongoCollection[A]): MongoIO[Unit] =
+  def dropCollection[A](
+      c: ZMongoCollection[A]
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.dropCollection(c))
 
-  def dropCollections[A](cs: Chunk[ZMongoCollection[A]]): MongoIO[Unit] =
+  def dropCollections[A](
+      cs: Chunk[ZMongoCollection[A]]
+    ): MongoIO[Unit] =
     ZIO.serviceWithZIO(_.dropCollections(cs))

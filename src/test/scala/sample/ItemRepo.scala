@@ -9,16 +9,18 @@ import mongo4cats.bson.syntax.*
 import mongo4cats.codecs.MongoCodecProvider
 import mongo4cats.operations.*
 import mongo4cats.zio.*
-import mongo4cats.zio.JsonCodecs.{ *, given }
+import mongo4cats.zio.json.{ *, given }
 import scala.reflect.ClassTag
 import _root_.zio.*
 import _root_.zio.json.*
 
-case class Counter(count: Int) extends Product
+case class Counter(
+    count: Int
+  ) extends Product
 object Counter:
-  implicit val jsonDecoder: JsonDecoder[Counter]       = DeriveJsonDecoder.gen[Counter]
-  implicit val jsonEncoder: JsonEncoder[Counter]       = DeriveJsonEncoder.gen[Counter]
-  implicit val mongoCodec: MongoCodecProvider[Counter] = jsonCodecProvider[Counter]
+  given jsonDecoder: JsonDecoder[Counter]       = DeriveJsonDecoder.gen[Counter]
+  given jsonEncoder: JsonEncoder[Counter]       = DeriveJsonEncoder.gen[Counter]
+  given mongoCodec: MongoCodecProvider[Counter] = deriveZioJsonCodecProvider[Counter]
 
 case class Item(
     _id: ObjectId,
@@ -31,11 +33,15 @@ object Item:
   implicit val jsonDecoder: JsonDecoder[Item] = DeriveJsonDecoder.gen[Item]
   implicit val jsonEncoder: JsonEncoder[Item] = DeriveJsonEncoder.gen[Item]
 
-final case class ItemRepo(repo: MongoRepo[Item])
+final case class ItemRepo(
+    repo: MongoRepo[Item]
+  )
 object ItemRepo:
   type ItemRepoIO[A] = RIO[ItemRepo, A]
 
-  def layer(db: String): URLayer[Mongo, ItemRepo] = ZLayer {
+  def layer(
+      db: String
+    ): URLayer[Mongo, ItemRepo] = ZLayer {
     for mongo <- ZIO.service[Mongo]
     yield ItemRepo(MongoRepo[Item](mongo, db, "items"))
   }
@@ -46,10 +52,14 @@ object ItemRepo:
   def count: ItemRepoIO[Long] =
     ZIO.serviceWithZIO(_.repo.count)
 
-  def count(filter: Filter): ItemRepoIO[Long] =
+  def count(
+      filter: Filter
+    ): ItemRepoIO[Long] =
     ZIO.serviceWithZIO(_.repo.count(filter))
 
-  def explain(filter: Filter): ItemRepoIO[Document] =
+  def explain(
+      filter: Filter
+    ): ItemRepoIO[Document] =
     ZIO.serviceWithZIO(_.repo.explain(filter))
 
   def aggregate[Y: ClassTag: MongoCodecProvider](
@@ -63,16 +73,22 @@ object ItemRepo:
   def findChunks: ItemRepoIO[Chunk[Item]] =
     ZIO.serviceWithZIO(_.repo.findChunks)
 
-  def findChunks(filter: Filter): ItemRepoIO[Chunk[Item]] =
+  def findChunks(
+      filter: Filter
+    ): ItemRepoIO[Chunk[Item]] =
     ZIO.serviceWithZIO(_.repo.findChunks(filter))
 
   def findFirst: ItemRepoIO[Option[Item]] =
     ZIO.serviceWithZIO(_.repo.findFirst)
 
-  def findFirst(filter: Filter): ItemRepoIO[Option[Item]] =
+  def findFirst(
+      filter: Filter
+    ): ItemRepoIO[Option[Item]] =
     ZIO.serviceWithZIO(_.repo.findFirst(filter))
 
-  def insert(doc: Item): ItemRepoIO[Item] =
+  def insert(
+      doc: Item
+    ): ItemRepoIO[Item] =
     for
       repo    <- ZIO.service[ItemRepo].map(_.repo)
       _       <- repo.insert(doc)
@@ -82,23 +98,36 @@ object ItemRepo:
                    .mapError(_ => new MongoException("Inserted item not found"))
     yield updated
 
-  def insertMany(docs: Chunk[Item]): ItemRepoIO[InsertManyResult] =
+  def insertMany(
+      docs: Chunk[Item]
+    ): ItemRepoIO[InsertManyResult] =
     ZIO.serviceWithZIO(_.repo.insertMany(docs))
 
-  def remove(id: ObjectId): ItemRepoIO[DeleteResult] =
+  def remove(
+      id: ObjectId
+    ): ItemRepoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.repo.remove(id))
 
-  def remove(filter: Filter): ItemRepoIO[DeleteResult] =
+  def remove(
+      filter: Filter
+    ): ItemRepoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.repo.remove(filter))
 
   def removeAll: ItemRepoIO[DeleteResult] =
     ZIO.serviceWithZIO(_.repo.clearCollection)
 
-  def translate(filter: Filter): ItemRepoIO[String] =
+  def translate(
+      filter: Filter
+    ): ItemRepoIO[String] =
     ZIO.serviceWithZIO(_.repo.translate(filter))
 
-  def update(doc: Item): ItemRepoIO[UpdateResult] =
+  def update(
+      doc: Item
+    ): ItemRepoIO[UpdateResult] =
     ZIO.serviceWithZIO(_.repo.update(doc))
 
-  def update(query: Filter, update: Update): ItemRepoIO[UpdateResult] =
+  def update(
+      query: Filter,
+      update: Update,
+    ): ItemRepoIO[UpdateResult] =
     ZIO.serviceWithZIO(_.repo.update(query, update))

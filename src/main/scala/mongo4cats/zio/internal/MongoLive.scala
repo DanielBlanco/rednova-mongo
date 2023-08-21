@@ -16,11 +16,15 @@ final case class MongoLive(
   ) extends Mongo:
 
   /** @see Mongo.Service.database */
-  def getDatabase(name: String): Task[ZMongoDatabase] =
+  def getDatabase(
+      name: String
+    ): Task[ZMongoDatabase] =
     client.getDatabase(name)
 
   /** @see Mongo.Service.dropDatabase */
-  def dropDatabase(db: ZMongoDatabase): Task[Unit] =
+  def dropDatabase(
+      db: ZMongoDatabase
+    ): Task[Unit] =
     db.drop
 
   /** @see Mongo.Service.runCommand */
@@ -41,11 +45,15 @@ final case class MongoLive(
     db.runCommand(command, readPreference)
 
   /** @see Mongo.Service.findCollectionNames */
-  def findCollectionNames(db: ZMongoDatabase): Task[Chunk[String]] =
+  def findCollectionNames(
+      db: ZMongoDatabase
+    ): Task[Chunk[String]] =
     db.listCollectionNames.map(_.toChunk)
 
   /** @see Mongo.Service.clearCollection */
-  def clearCollection[A](c: ZMongoCollection[A]): Task[DeleteResult] =
+  def clearCollection[A](
+      c: ZMongoCollection[A]
+    ): Task[DeleteResult] =
     c.deleteMany(Document())
 
   /** @see Mongo.Service.getCollection */
@@ -65,13 +73,19 @@ final case class MongoLive(
     ): Task[ZMongoCollection[A]] =
     db.getCollection(name, codecRegistry)
 
-  def dropCollection[A](c: ZMongoCollection[A]): Task[Unit] =
+  def dropCollection[A](
+      c: ZMongoCollection[A]
+    ): Task[Unit] =
     c.drop
 
 object MongoLive:
 
-  def apply(uri: String) =
+  def apply(
+      uri: String
+    ) =
     connect(uri).map(client => new MongoLive(client))
 
-  private def connect(uri: String) =
+  private def connect(
+      uri: String
+    ) =
     ZMongoClient.fromConnectionString(uri)

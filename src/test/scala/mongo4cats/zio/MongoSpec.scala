@@ -17,24 +17,24 @@ object MongoSpec extends ZIOSpecDefault:
 
   def spec = suite("MongoSpec")(
     test("healthcheck") {
-      for {
+      for
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.healthcheck(db).either
-      } yield assert(rslt)(isRight)
+      yield assert(rslt)(isRight)
     }.provide(Mongo.live(TEST_URI)),
     test("ping") {
-      for {
+      for
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.ping(db).either
-      } yield assert(rslt)(isRight)
+      yield assert(rslt)(isRight)
     }.provide(Mongo.live(TEST_URI)),
     test("findCollectionNames") {
-      for {
+      for
         db   <- Mongo.getDatabase(TEST_DB)
         old  <- Mongo.getCollections(collNames)(db)
         _    <- Mongo.dropCollections(old)
         _    <- Mongo.createCollections(collNames)(db)
         rslt <- Mongo.findCollectionNames(db)
-      } yield assert(rslt)(hasSubset(collNames))
+      yield assert(rslt)(hasSubset(collNames))
     }.provide(Mongo.live(TEST_URI)),
   )
